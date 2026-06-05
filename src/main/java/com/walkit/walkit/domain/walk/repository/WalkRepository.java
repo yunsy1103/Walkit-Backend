@@ -94,4 +94,14 @@ where w.user.id = :userId
 
     Optional<Walk> findFirstByUserIdOrderByCreatedDateDesc(Long userId);
 
+    @Query("""
+        select w from Walk w
+        left join fetch w.points
+        where w.user.id = :userId
+        order by w.createdDate desc
+    """)
+    List<Walk> findTopWithPointsByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    List<Walk> findAllByUser_IdIn(List<Long> userIds);
+
 }

@@ -12,7 +12,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -50,7 +49,6 @@ public class JwtService {
                 .compact();
     }
 
-    @Transactional
     public String generateRefreshToken(Long userId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtProperties.getRefreshTokenExpiration());
@@ -62,8 +60,7 @@ public class JwtService {
                 .signWith(key)
                 .compact();
 
-        refreshTokenRepository.findByUserId(userId)
-                .ifPresent(refreshTokenRepository::delete);
+        refreshTokenRepository.deleteByUserId(userId);
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .userId(userId)
@@ -109,7 +106,6 @@ public class JwtService {
         }
     }
 
-    @Transactional
     public String refreshAccessToken(String refreshToken) {
         Long userId = getUserIdFromToken(refreshToken);
 
@@ -122,12 +118,9 @@ public class JwtService {
         }
 
         if (storedToken.isExpired()) {
-            refreshTokenRepository.delete(storedToken);
+            refreshTokenRepository.deleteByUserId(userId);
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
-
-        storedToken.markAsUsed();
-        refreshTokenRepository.save(storedToken);
 
         return generateAccessToken(userId);
     }

@@ -15,4 +15,5 @@ public interface WalkLikeRepository extends JpaRepository<WalkLike, Long> {
     Optional<WalkLike> findByUserIdAndWalkId(Long userId, Long walkId);
     void deleteByUserIdAndWalkId(Long userId, Long walkId);
     List<WalkLike> findByWalk(Walk walk);
+    int countByWalkId(Long walkId);
 }
